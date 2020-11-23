@@ -67,24 +67,27 @@ def parse_program(program: str, parser: Parser = None, code2vec: Word2VecKeyedVe
 
     tree = parser.parse(bytes(program, "utf8"))
 
+    # 建立一个空的有向图
     g: nx.DiGraph = nx.DiGraph()
 
     queue: Queue = Queue()
     queue.put(tree.root_node)
 
     while not queue.empty():
-
+        # 按照宽度优先的顺序来建立一个有向图
         node = queue.get()
 
         if not hasattr(node, 'children'):
             continue
-
+        
+        # 依次将父节点与子节点连接起来：root-child 建立边的关系
         for child in node.children:
             g.add_edge(TreeSitterNode(node, program), TreeSitterNode(child, program))
 
             queue.put(child)
 
     # embedding are added to each node
+    # 使用code2vec的嵌入表示来初始化表示图中的节点
     if code2vec is not None:
         zeros = np.zeros(code2vec.vector_size)
         for node in g.nodes:
@@ -107,6 +110,7 @@ def plot_graph(g: nx.DiGraph):
 
 
 def get_data_from_graph(g: nx.DiGraph, y=None) -> Data:
+    # 返回图邻接矩阵。graph_spicy.todense()是一个二维矩阵，矩阵的每一个元素是两个节点之间的边的权重
     graph_spicy = nx.to_scipy_sparse_matrix(g, format='coo')
     edge_index = torch.tensor([graph_spicy.row, graph_spicy.col], dtype=torch.long)
 

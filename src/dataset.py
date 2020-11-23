@@ -6,12 +6,19 @@ import random
 from torch_geometric.data import Dataset
 
 from code_parser import *
+from code_parser import  get_data_from_graph
 
-
+# train_dataset = FastCloneDataset(root="../data/", functions_path="../data/networkx_data_idx/", pairs_path="../data/train.npz", return_pair_data=False)
 class FastCloneDataset(Dataset):
+    '''
+    FastCloneDataset： 
+
+    networkx_data_idx 存储的是: source code的语法树形式，且每个语法树的node已经被fasttext嵌入表示
+    '''
     def __init__(self, root, functions_path, pairs_path, return_pair_data=False, transform=None, pre_transform=None):
         self.functions_path = functions_path
         self.return_pair_data = return_pair_data
+        # 训练集或测试集中存储的pair
         self.pairs = np.load(pairs_path)['arr_0']
         self.functions = {}
         self.processed_pairs = {}
